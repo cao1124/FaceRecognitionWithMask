@@ -1,9 +1,23 @@
 import numpy as np
 import os
+import cv2
 from PIL import Image, ImageDraw, ImageFont
-__all__ = ['add_chinese_text', 'is_image_file', 'is_dcm_file', 'has_file_allowed_extension']
+__all__ = ['cv_show', 'add_chinese_text', 'is_image_file', 'is_dcm_file', 'has_file_allowed_extension']
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']
 DICOM_EXTENSIONS = ['dcm']
+
+
+def cv_show(name, image, resize=1):
+    """
+    show image and resize show window
+    :param name: window name
+    :param image: image
+    :param resize: resize ratio
+    """
+    H, W = image.shape[0:2]
+    cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+    cv2.imshow(name, image.astype(np.uint8))
+    cv2.resizeWindow(name, round(resize*W), round(resize*H))
 
 
 def list_image(path, format):
@@ -17,7 +31,7 @@ def list_image(path, format):
     return list_images
 
 
-def add_chinese_text(frame, addtxt, left, bottom, fill=(255, 255, 255), textSize=20):
+def add_chinese_text(frame, addtxt, left, bottom, color, textSize=20):
     """
     add chinese txt to image
     :param frame: image wanna to add
@@ -32,7 +46,7 @@ def add_chinese_text(frame, addtxt, left, bottom, fill=(255, 255, 255), textSize
     font = ImageFont.truetype(fontpath, textSize)  # 加载字体, 字体大小
     img_pil = Image.fromarray(frame)
     draw = ImageDraw.Draw(img_pil)
-    draw.text((left + 6, bottom - 20), addtxt, font=font, fill=(255, 255, 255))
+    draw.text((left + 6, bottom - 20), addtxt, font=font, fill=color)
     frame = np.array(img_pil)
     return frame
 
