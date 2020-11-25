@@ -5,6 +5,7 @@ import argparse
 import numpy as np
 import cv2
 from face_recognizer import FaceRecognizer
+from img_utils import add_chinese_text
 
 
 def main():
@@ -14,14 +15,18 @@ def main():
     parser.add_argument('--output_video_path', type=str, default='output.mp4', help='the path of input video')
 
     args = parser.parse_args()
+    args.face_db_root = 'data/mask_nomask'
+    args.input_video_path = 'data/test.mp4'
+    args.output_video_path = 'data/output.mp4'
+
     recognizer = FaceRecognizer()
     recognizer.create_known_faces(args.face_db_root)
     # recognizer.test_100x()
 
     # 测试视频路径
-    input_movie = cv2.VideoCapture(args.input_video_path)
+    # input_movie = cv2.VideoCapture(args.input_video_path)
     # 测试摄像头
-    # input_movie = cv2.VideoCapture(0)
+    input_movie = cv2.VideoCapture(0)
 
     # 视频尺寸
     video_size = (1024, 720)
@@ -43,8 +48,10 @@ def main():
             cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
             # Draw a label with a name below the face
             cv2.rectangle(frame, (left, bottom - 25), (right, bottom), (0, 0, 255), cv2.FILLED)
-            font = cv2.FONT_HERSHEY_DUPLEX
-            cv2.putText(frame, "%s %.3f" % (name, score), (left + 6, bottom - 6), font, 0.5, (255, 255, 255), 1)
+            # font = cv2.FONT_HERSHEY_DUPLEX
+            # cv2.putText(frame, "%s %.3f" % (name, score), (left + 6, bottom - 6), font, 0.5, (255, 255, 255), 1)
+            # puttext中文显示
+            frame = add_chinese_text(frame, "%s %.3f" % (name, score), left, bottom, fill=(255, 255, 255), textSize=20)
         output_movie.write(frame)
         cv2.imshow('0', frame)
         cv2.waitKey(1)
