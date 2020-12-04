@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-from fastapi import FastAPI, File
-from face_recognizer import FaceRecognizer
+from .fastapi import FastAPI, File
+from .face_recognizer import FaceRecognizer
 face_rec = FaceRecognizer()
 face_rec.create_known_faces('data/mask_nomask')
 
