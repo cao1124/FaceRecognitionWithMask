@@ -51,12 +51,9 @@ def apply_mask(target_image, fa, mask_rgba_crop, target_points, triangles_indexe
     return mask_rgba_crop_vis
 
 
-def apply_mask_to_face():
-    path = 'apply_mask_to_faces/mask_data/nomask/'
-    list_images = [x for x in os.listdir(os.path.join(path)) if 'raw' not in x]
-
+def apply_mask_to_face(path, list_images):
     # Generate landmark estimator by face_alignment library
-    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, device='cpu')
+    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, device='cuda')
     # mask_rgba_crop_vis, mask_rgba_crop, target_points, triangles_indexes = Generate_landmark(fa, ori_image)
     # apply_mask(target_image, fa, mask_rgba_crop, target_points, triangles_indexes)
 
@@ -65,12 +62,14 @@ def apply_mask_to_face():
 
     for i in range(len(list_images)):
         img_path = os.path.join(path, list_images[i])
-        out_path = img_path.split('nomask')[0] + "mask/" + list_images[i].split('2')[0] + '1' + list_images[i].split('2')[1]
+        out_path = img_path.split('.2.')[0] + '.1.jpg'
         target_image = cv2.imread(img_path, cv2.IMREAD_COLOR)
         target_image_with_mask = utils.end2end_mask_generation(target_image, masks_database, fa)
         cv2.imwrite(out_path, target_image_with_mask)
-    print('done')
+    # print('done')
 
 
 if __name__ == '__main__':
-    apply_mask_to_face()
+    path = 'apply_mask_to_faces/mask_data/nomask/'
+    list_images = [x for x in os.listdir(os.path.join(path)) if 'raw' not in x]
+    apply_mask_to_face(path, list_images)
