@@ -3,6 +3,7 @@
 """
 import argparse
 import cv2
+import os
 from face_recognizer import FaceRecognizer
 from img_utils import add_chinese_text, cv_show, list_image
 from apply_mask_to_faces.MaskFace import apply_mask_to_face
@@ -15,13 +16,13 @@ def main():
     parser.add_argument('--output_video_path', type=str, default='output.mp4', help='the path of input video')
 
     args = parser.parse_args()
-    args.face_db_root = 'data/mask_nomask'
+    args.face_db_root = 'data/face_datebase'
     args.input_video_path = 'data/test.mp4'
     args.output_video_path = 'data/output.mp4'
 
     # 数据库不戴口罩樣本处理
-    no_mask_data = list_image(args.face_db_root, '.2.')
-    mask_data = list_image(args.face_db_root, '.1.')
+    no_mask_data = os.listdir(os.path.join(args.face_db_root, 'nomask/'))
+    mask_data = os.listdir(os.path.join(args.face_db_root, 'mask/'))
     for i in mask_data:
         for j in no_mask_data:
             if i.split('.1.')[0] in j:
@@ -30,7 +31,7 @@ def main():
         # apply_mask_to_face(args.face_db_root, no_mask_data)
         from apply_mask_to_faces.face_mask.maskface import cli
         for i in no_mask_data:
-            pic_path = str(args.face_db_root + '/' + i)
+            pic_path = str(args.face_db_root + '/nomask/' + i)
             mask_path = 'blue'
             show = False
             model = 'hog'
@@ -71,13 +72,14 @@ def main():
                     cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
                     # Draw a label with a name below the face
                     cv2.rectangle(frame, (left, bottom - 25), (right, bottom), (0, 0, 255), cv2.FILLED)
-                    frame = add_chinese_text(frame, "%s %.3f %s" % (name, score, cls), left, bottom, (0, 255, 255), 20)
+                    frame = add_chinese_text(frame, "%s %s" % (name, cls), left, bottom, (0, 255, 255), 20)
+                # frame = add_chinese_text(frame, "%s %.3f %s" % (name, score, cls), left, bottom, (0, 255, 255), 20)
                 else:
                     cls = '佩戴口罩'
                     cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
                     # Draw a label with a name below the face
                     cv2.rectangle(frame, (left, bottom - 25), (right, bottom), (0, 255, 0), cv2.FILLED)
-                    frame = add_chinese_text(frame, "%s %.3f %s" % (name, score, cls), left, bottom, (255, 0, 0), 20)
+                    frame = add_chinese_text(frame, "%s %s" % (name, cls), left, bottom, (255, 0, 0), 20)
             else:
                 if cls == 0:
                     cls = '未佩戴口罩'

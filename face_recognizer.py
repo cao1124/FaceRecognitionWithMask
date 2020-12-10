@@ -60,12 +60,18 @@ class FaceRecognizer:
         :param root:目标图片存放路径
         :return: [[id..] [feat..]]
         '''
-        self._known_faces = []
-        self._know_name = []
-        for i, fname in enumerate(os.listdir(root)):
-            fpath = os.path.join(root, fname)
-            self._known_faces.append(self._get_img_face_encoding(fpath))
-            self._know_name.append(fname.split('.')[0])
+        self._known_mask_faces = []
+        self._know_mask_name = []
+        self._known_nomask_faces = []
+        self._know_nomask_name = []
+        for i, fname in enumerate(os.listdir(root + '/mask')):
+            fpath = os.path.join(root + '/mask', fname)
+            self._known_mask_faces.append(self._get_img_face_encoding(fpath))
+            self._know_mask_name.append(fname.split('.')[0])
+        for i, fname in enumerate(os.listdir(root + '/nomask')):
+            fpath = os.path.join(root + '/nomask', fname)
+            self._known_nomask_faces.append(self._get_img_face_encoding(fpath))
+            self._know_nomask_name.append(fname.split('.')[0])
 
     def recognize(self, image, score_threshold=0.6):
         '''
@@ -80,12 +86,21 @@ class FaceRecognizer:
         item = self.face_detector.detect(image)
         if item:
             box, cls = item
-            face_feat = self._get_face_feat(image, box)
-            scores = 1 - self._face_distance(self._known_faces, face_feat)
-            ix = np.argmax(scores).item()
-            if scores[ix] > score_threshold:
-                # 1 for mask
-                return self._know_name[ix], box, 1 - int(cls), scores[ix]
+            # cls: 0 for mask, 1 for no mask
+            if cls == 0:
+                face_feat = self._get_face_feat(image, box)
+                scores = 1 - self._face_distance(self._known_mask_faces, face_feat)
+                ix = np.argmax(scores).item()
+                if scores[ix] > score_threshold:
+                    # 1 - int(cls): 1 for mask, 0 for no mask
+                    return self._know_mask_name[ix], box, 1 - int(cls), scores[ix]
+            else:
+                face_feat = self._get_face_feat(image, box)
+                scores = 1 - self._face_distance(self._known_nomask_faces, face_feat)
+                ix = np.argmax(scores).item()
+                if scores[ix] > score_threshold:
+                    # 1 - int(cls): 1 for mask, 0 for no mask
+                    return self._know_nomask_name[ix], box, 1 - int(cls), scores[ix]
             return None
 
     def test_100x(self):
