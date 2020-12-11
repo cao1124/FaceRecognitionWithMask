@@ -51,8 +51,11 @@ class FaceRecognizer:
         img_x = cv2.cvtColor(img_x, cv2.COLOR_BGR2RGB)
         item = self.face_detector.detect(img_x)
         assert item is not None, 'can not find the face box,please check %s' % fpath
-        box, _ = item
-        return self._get_face_feat(img_x, box)
+        feat_list = []
+        for i in range(len(item)):
+            box, _ = item[i]
+            feat_list.append(self._get_face_feat(img_x, box))
+        return feat_list
 
     def create_known_faces(self, root):
         '''
@@ -66,11 +69,11 @@ class FaceRecognizer:
         self._know_nomask_name = []
         for i, fname in enumerate(os.listdir(root + '/mask')):
             fpath = os.path.join(root + '/mask', fname)
-            self._known_mask_faces.append(self._get_img_face_encoding(fpath))
+            self._known_mask_faces.append(self._get_img_face_encoding(fpath)[0])
             self._know_mask_name.append(fname.split('.')[0])
         for i, fname in enumerate(os.listdir(root + '/nomask')):
             fpath = os.path.join(root + '/nomask', fname)
-            self._known_nomask_faces.append(self._get_img_face_encoding(fpath))
+            self._known_nomask_faces.append(self._get_img_face_encoding(fpath)[0])
             self._know_nomask_name.append(fname.split('.')[0])
 
     def recognize(self, image, score_threshold=0.6):
@@ -84,24 +87,35 @@ class FaceRecognizer:
             image = cv2.imread(image)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         item = self.face_detector.detect(image)
+        name_list=[]
+        box_list=[]
+        cls_list=[]
+        scores_list =[]
         if item:
-            box, cls = item
-            # cls: 0 for mask, 1 for no mask
-            if cls == 0:
-                face_feat = self._get_face_feat(image, box)
-                scores = 1 - self._face_distance(self._known_mask_faces, face_feat)
-                ix = np.argmax(scores).item()
-                if scores[ix] > score_threshold:
-                    # 1 - int(cls): 1 for mask, 0 for no mask
-                    return self._know_mask_name[ix], box, 1 - int(cls), scores[ix]
-            else:
-                face_feat = self._get_face_feat(image, box)
-                scores = 1 - self._face_distance(self._known_nomask_faces, face_feat)
-                ix = np.argmax(scores).item()
-                if scores[ix] > score_threshold:
-                    # 1 - int(cls): 1 for mask, 0 for no mask
-                    return self._know_nomask_name[ix], box, 1 - int(cls), scores[ix]
-            return None
+            for i in range(len(item)):
+                box, cls = item[i]
+                # cls: 0 for mask, 1 for no mask
+                if cls == 0:
+                    face_feat = self._get_face_feat(image, box)
+                    scores = 1 - self._face_distance(self._known_mask_faces, face_feat)
+                    ix = np.argmax(scores).item()
+                    if scores[ix] > score_threshold:
+                        # 1 - int(cls): 1 for mask, 0 for no mask
+                        name_list.append(self._know_mask_name[ix])
+                        box_list.append(box)
+                        cls_list.append(1 - int(cls))
+                        scores_list.append(scores[ix])
+                else:
+                    face_feat = self._get_face_feat(image, box)
+                    scores = 1 - self._face_distance(self._known_nomask_faces, face_feat)
+                    ix = np.argmax(scores).item()
+                    if scores[ix] > score_threshold:
+                        # 1 - int(cls): 1 for mask, 0 for no mask
+                        name_list.append(self._know_mask_name[ix])
+                        box_list.append(box)
+                        cls_list.append(1 - int(cls))
+                        scores_list.append(scores[ix])
+            return name_list, box_list, cls_list, scores_list
 
     def test_100x(self):
         '''

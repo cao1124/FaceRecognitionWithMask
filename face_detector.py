@@ -43,6 +43,7 @@ class FaceDetector:
         # keep_idx is the alive bounding box after nms.
         keep_idxs = single_class_non_max_suppression(y_bboxes, bbox_max_scores, conf_thresh, iou_thresh)
         max_area, r_item = -1, None
+        r_item_list = []
         for idx in keep_idxs:
             # conf = float(bbox_max_scores[idx])
             class_id = bbox_max_score_classes[idx]
@@ -55,6 +56,7 @@ class FaceDetector:
             item = (xmin, ymin, xmax, ymax), class_id
             area = (xmax - xmin) * (ymax - ymin)
             if max_area < area:
-                max_area, r_item = area, item
-        return r_item
+                r_item_list.append(item)
+                # max_area, r_item = area, item
+        return r_item_list
 

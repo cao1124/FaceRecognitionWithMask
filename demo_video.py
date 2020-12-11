@@ -62,35 +62,39 @@ def main():
         frame = cv2.resize(frame, dsize=video_size)
         item = recognizer.recognize(frame, 0.5)
         if item:
-            name, (left, top, right, bottom), cls, score = item
-            # font = cv2.FONT_HERSHEY_DUPLEX
-            # cv2.putText(frame, "%s %.3f" % (name, score), (left + 6, bottom - 6), font, 0.5, (255, 255, 255), 1)
-            # puttext中文显示
-            if score > 0.6:
-                if cls == 0:
-                    cls = '未佩戴口罩'
-                    cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-                    # Draw a label with a name below the face
-                    cv2.rectangle(frame, (left, bottom - 25), (right, bottom), (0, 0, 255), cv2.FILLED)
-                    frame = add_chinese_text(frame, "%s %s" % (name, cls), left, bottom, (0, 255, 255), 20)
+            for i in range(len(item[0])):
+                name = item[0][i]
+                (left, top, right, bottom)=item[1][i]
+                cls = item[2][i]
+                score = item[3][i]
+                # font = cv2.FONT_HERSHEY_DUPLEX
+                # cv2.putText(frame, "%s %.3f" % (name, score), (left + 6, bottom - 6), font, 0.5, (255, 255, 255), 1)
+                # puttext中文显示
+                if score > 0.6:
+                    if cls == 0:
+                        cls = '未佩戴口罩'
+                        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+                        # Draw a label with a name below the face
+                        cv2.rectangle(frame, (left, bottom - 25), (right, bottom), (0, 0, 255), cv2.FILLED)
+                        frame = add_chinese_text(frame, "%s %s" % (name, cls), left, bottom, (0, 255, 255), 20)
                 # frame = add_chinese_text(frame, "%s %.3f %s" % (name, score, cls), left, bottom, (0, 255, 255), 20)
+                    else:
+                        cls = '佩戴口罩'
+                        cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+                        # Draw a label with a name below the face
+                        cv2.rectangle(frame, (left, bottom - 25), (right, bottom), (0, 255, 0), cv2.FILLED)
+                        frame = add_chinese_text(frame, "%s %s" % (name, cls), left, bottom, (255, 0, 0), 20)
                 else:
-                    cls = '佩戴口罩'
-                    cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-                    # Draw a label with a name below the face
-                    cv2.rectangle(frame, (left, bottom - 25), (right, bottom), (0, 255, 0), cv2.FILLED)
-                    frame = add_chinese_text(frame, "%s %s" % (name, cls), left, bottom, (255, 0, 0), 20)
-            else:
-                if cls == 0:
-                    cls = '未佩戴口罩'
-                    cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-                    cv2.rectangle(frame, (left, bottom - 25), (right, bottom), (0, 0, 255), cv2.FILLED)
-                    frame = add_chinese_text(frame, "%s %s" % ('RGB活体', cls), left, bottom, (0, 255, 255), 20)
-                else:
-                    cls = '佩戴口罩'
-                    cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-                    cv2.rectangle(frame, (left, bottom - 25), (right, bottom), (0, 255, 0), cv2.FILLED)
-                    frame = add_chinese_text(frame, "%s %s" % ('RGB活体', cls), left, bottom, (255, 0, 0), 20)
+                    if cls == 0:
+                        cls = '未佩戴口罩'
+                        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+                        cv2.rectangle(frame, (left, bottom - 25), (right, bottom), (0, 0, 255), cv2.FILLED)
+                        frame = add_chinese_text(frame, "%s %s" % ('RGB活体', cls), left, bottom, (0, 255, 255), 20)
+                    else:
+                        cls = '佩戴口罩'
+                        cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+                        cv2.rectangle(frame, (left, bottom - 25), (right, bottom), (0, 255, 0), cv2.FILLED)
+                        frame = add_chinese_text(frame, "%s %s" % ('RGB活体', cls), left, bottom, (255, 0, 0), 20)
         logo = cv2.imread('data/gdpacs_logo.jpg')
         frame[frame.shape[0] - logo.shape[0]:frame.shape[0], frame.shape[1] - logo.shape[1]:frame.shape[1]] = logo
         # output_movie.write(frame)
