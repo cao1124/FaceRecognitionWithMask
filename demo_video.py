@@ -16,7 +16,7 @@ def main():
     parser.add_argument('--output_video_path', type=str, default='output.mp4', help='the path of input video')
 
     args = parser.parse_args()
-    args.face_db_root = 'data/face_datebase'
+    args.face_db_root = 'data/face_database'
     args.input_video_path = 'data/test.mp4'
     args.output_video_path = 'data/output.mp4'
 
